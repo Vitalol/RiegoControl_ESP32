@@ -5,6 +5,7 @@
 #include "esp_log.h"
 #include "driver/spi_master.h"
 #include "driver/gpio.h"
+#include "lora.h"
 
 /*
  * Register definitions
@@ -725,3 +726,10 @@ lora_dump_registers(void)
    printf("\n");
 }
 
+void lora_config(LoraConf_t loraConf){
+   lora_set_frequency(loraConf.frequency);
+   lora_enable_crc();
+   lora_set_coding_rate(loraConf.codingRate);
+   lora_set_bandwidth(loraConf.bandwith);
+   lora_set_spreading_factor(loraConf.spreadingFactor);
+}

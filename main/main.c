@@ -3,98 +3,113 @@
 #include "freertos/task.h"
 #include "esp_log.h"
 #include "lora.h"
+#include "node_config.h"
+#include "bme280.h"
+#include "bme280_port.h"
+#include "driver/i2c.h"
 
-#if CONFIG_SENDER
-void task_tx(void *pvParameters)
-{
-	ESP_LOGI(pcTaskGetName(NULL), "Start");
-	uint8_t buf[256]; // Maximum Payload size of SX1276/77/78/79 is 255
-	while(1) {
-		TickType_t nowTick = xTaskGetTickCount();
-		int send_len = sprintf((char *)buf,"Hello World!! %d",nowTick);
-		lora_send_packet(buf, send_len);
-		ESP_LOGI(pcTaskGetName(NULL), "%d byte packet sent...", send_len);
-		vTaskDelay(pdMS_TO_TICKS(5000));
-	} // end while
-}
-#endif // CONFIG_SENDER
+#define TSK_SIZE_SENSOR (2 * 1024)
+#define TSK_SIZE_RX     (4 * 1024)
+#define QUEUE_LENGTH_SENSOR 10
 
-#if CONFIG_RECEIVER
-void task_rx(void *pvParameters)
-{
-	ESP_LOGI(pcTaskGetName(NULL), "Start");
-	uint8_t buf[256]; // Maximum Payload size of SX1276/77/78/79 is 255
-	while(1) {
-		lora_receive(); // put into receive mode
-		if (lora_received()) {
-			int receive_len = lora_receive_packet(buf, sizeof(buf));
-			ESP_LOGI(pcTaskGetName(NULL), "%d byte packet received:[%.*s]", receive_len, receive_len, buf);
-		} // end if
-		vTaskDelay(2); // Avoid WatchDog alerts
-	} // end while
-}
-#endif // CONFIG_RECEIVER
+// prototypes
+void tsk_sensor(void *pvParameters);
+void task_rx(void *pvParameters);
+void task_lora_comm(void *pvParameters);
+// Queues
+QueueHandle_t queue_sensor;
+
 
 void app_main()
 {
-	if (lora_init() == 0) {
-		ESP_LOGE(pcTaskGetName(NULL), "Does not recognize the module");
-		while(1) {
-			vTaskDelay(1);
-		}
-	}
 
-#if CONFIG_169MHZ
-	ESP_LOGI(pcTaskGetName(NULL), "Frequency is 169MHz");
-	lora_set_frequency(169e6); // 169MHz
-#elif CONFIG_433MHZ
-	ESP_LOGI(pcTaskGetName(NULL), "Frequency is 433MHz");
-	lora_set_frequency(433e6); // 433MHz
-#elif CONFIG_470MHZ
-	ESP_LOGI(pcTaskGetName(NULL), "Frequency is 470MHz");
-	lora_set_frequency(470e6); // 470MHz
-#elif CONFIG_866MHZ
-	ESP_LOGI(pcTaskGetName(NULL), "Frequency is 866MHz");
-	lora_set_frequency(866e6); // 866MHz
-#elif CONFIG_915MHZ
-	ESP_LOGI(pcTaskGetName(NULL), "Frequency is 915MHz");
-	lora_set_frequency(915e6); // 915MHz
-#elif CONFIG_OTHER
-	ESP_LOGI(pcTaskGetName(NULL), "Frequency is %dMHz", CONFIG_OTHER_FREQUENCY);
-	long frequency = CONFIG_OTHER_FREQUENCY * 1000000;
-	lora_set_frequency(frequency);
-#endif
+    ESP_LOGI(pcTaskGetName(NULL), "Project Version: %d", conf_get_version());
 
-	lora_enable_crc();
+    // LoRa initialitation
+    // Recognize module
+    do{
+        ESP_LOGE(pcTaskGetName(NULL), "Does not recognize the module");
+        vTaskDelay(1000 / portTICK_RATE_MS);
+    }while((lora_init() == 0));
 
-	int cr = 1;
-	int bw = 7;
-	int sf = 7;
-#if CONFIF_ADVANCED
-	cr = CONFIG_CODING_RATE
-	bw = CONFIG_BANDWIDTH;
-	sf = CONFIG_SF_RATE;
-#endif
+    // Lora configuration
+    lora_enable_crc();
+    LoraConf_t lora_configuration;
+    lora_configuration.frequency = FREQ_915MHz;
+    lora_configuration.codingRate = 5;
+    lora_configuration.bandwith = 7;
+    lora_configuration.spreadingFactor = 7;
+    lora_config(lora_configuration);
+    conf_set_NodeMode(SensorNode);
+    
+    // Queues initialitation
+    queue_sensor = xQueueCreate(QUEUE_LENGTH_SENSOR, sizeof(struct bme280_data));
+    // Task initialitation
 
-	lora_set_coding_rate(cr);
-	//lora_set_coding_rate(CONFIG_CODING_RATE);
-	//cr = lora_get_coding_rate();
-	ESP_LOGI(pcTaskGetName(NULL), "coding_rate=%d", cr);
+    switch (conf_get_NodeMode())
+    {
+        case SensorNode:
+            xTaskCreate(&tsk_sensor, "tsk_sensor", TSK_SIZE_SENSOR, NULL, 5, NULL);
+            break;
+        case ActuatorNode:
+            // ToDo:
+            break;
+        default:
+            break;
+    }
+    // Lora task initialitation
+    xTaskCreate(&task_lora_comm, "task_lora_comm", TSK_SIZE_RX, NULL, 5, NULL);
+}
 
-	lora_set_bandwidth(bw);
-	//lora_set_bandwidth(CONFIG_BANDWIDTH);
-	//int bw = lora_get_bandwidth();
-	ESP_LOGI(pcTaskGetName(NULL), "bandwidth=%d", bw);
+void tsk_sensor(void *pvParameters)
+{
+    struct bme280_dev dev;
+    struct bme280_data sensor_data;
+    bme280_I2C_init(&dev);
 
-	lora_set_spreading_factor(sf);
-	//lora_set_spreading_factor(CONFIG_SF_RATE);
-	//int sf = lora_get_spreading_factor();
-	ESP_LOGI(pcTaskGetName(NULL), "spreading_factor=%d", sf);
+    while (true)
+    {
+        stream_sensor_data_forced_mode(&dev, &sensor_data);
+        //print_sensor_data(&data);
+        ESP_LOGI(pcTaskGetName(NULL), "Sensor data");
+        xQueueSend(queue_sensor, (void *)&sensor_data, 1000 / portTICK_RATE_MS);
+        vTaskDelay(1000 / portTICK_RATE_MS);
+    }
+}
 
-#if CONFIG_SENDER
-	xTaskCreate(&task_tx, "task_tx", 1024*3, NULL, 5, NULL);
-#endif
-#if CONFIG_RECEIVER
-	xTaskCreate(&task_rx, "task_rx", 1024*3, NULL, 5, NULL);
-#endif
+void task_rx(void *pvParameters)
+{
+    ESP_LOGI(pcTaskGetName(NULL), "Start");
+    uint8_t buf[256]; // Maximum Payload size of SX1276/77/78/79 is 255
+    while (1)
+    {
+        lora_receive(); // put into receive mode
+        if (lora_received())
+        {
+            int receive_len = lora_receive_packet(buf, sizeof(buf));
+            for (int i = 0; i < receive_len; i++)
+            {
+                printf("%.2X ", buf[i]);
+            }
+            printf("\n");
+            ESP_LOGI(pcTaskGetName(NULL), "%d byte packet received:[%.*s]", receive_len, receive_len, buf);
+        }              // end if
+        vTaskDelay(2); // Avoid WatchDog alerts
+    }                  // end while
+}
+void task_lora_comm(void *pvParameters)
+{
+    ESP_LOGI(pcTaskGetName(NULL), "Start");
+    uint8_t buf[256]; // Maximum Payload size of SX1276/77/78/79 is 255
+    int count = 0;
+    struct bme280_data sensor_data;
+    while (1)
+    {
+        xQueueReceive(queue_sensor, &sensor_data, portMAX_DELAY);
+        print_sensor_data(&sensor_data);
+        int send_len = sprintf((char *)buf, "%.02f %.02f %.02f %d", sensor_data.humidity, sensor_data.pressure, sensor_data.temperature, count++);
+        lora_send_packet(buf, send_len);
+        ESP_LOGI(pcTaskGetName(NULL), "%d byte packet sent...", send_len);
+        vTaskDelay(4000 / portTICK_RATE_MS);
+    } // end while
 }

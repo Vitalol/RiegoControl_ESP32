@@ -1,5 +1,15 @@
 {
     "idf.flashType": "UART",
     "idf.portWin": "COM4",
-    "idf.adapterTargetName": "esp32"
+    "idf.adapterTargetName": "esp32",
+    "files.associations": {
+        "config.h": "c",
+        "ieeefp.h": "c",
+        "bmp2_defs.h": "c",
+        "ets_sys.h": "c",
+        "*.inc": "c",
+        "bmp2_port.h": "c",
+        "bme280.h": "c",
+        "bme280_port.h": "c"
+    }
 }

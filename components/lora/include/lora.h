@@ -1,8 +1,8 @@
 #ifndef __LORA_H__
 #define __LORA_H__
 
-int lora_read_reg(int reg);
 
+/* Library original */
 void lora_reset(void);
 void lora_explicit_header_mode(void);
 void lora_implicit_header_mode(int size);
@@ -34,5 +34,24 @@ float lora_packet_snr(void);
 void lora_close(void);
 int lora_initialized(void);
 void lora_dump_registers(void);
+
+/* Added functions, structs, defines, etc */
+
+#define FREQ_169MHz 169e6 
+#define FREQ_433MHz 433e6 
+#define FREQ_470MHz 470e6 
+#define FREQ_866MHz 866e6 
+#define FREQ_915MHz 915e6 
+
+/* structs */
+typedef struct LoraConf_t{
+    int64_t frequency;
+    uint8_t codingRate;
+    uint8_t bandwith;
+    uint8_t spreadingFactor;
+}LoraConf_t;
+
+/* functions */
+void lora_config(LoraConf_t loraConf);
 
 #endif
