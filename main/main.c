@@ -1,16 +1,22 @@
 #include <stdio.h>
+
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+
 #include "esp_log.h"
+
 #include "lora.h"
 #include "node_config.h"
 #include "bme280.h"
 #include "bme280_port.h"
-#include "driver/i2c.h"
+#include "measurements.h"
 
-#define TSK_SIZE_SENSOR (2 * 1024)
+// defines
+#define TSK_SIZE_SENSOR (4 * 1024)
 #define TSK_SIZE_RX     (4 * 1024)
-#define QUEUE_LENGTH_SENSOR 10
+#define QUEUE_LENGTH_SENSOR 16
+#define BME280_MEASURES_NUM     3
+#define MAX_MEASURES_NUM    3*16
 
 // prototypes
 void tsk_sensor(void *pvParameters);
@@ -18,6 +24,10 @@ void task_rx(void *pvParameters);
 void task_lora_comm(void *pvParameters);
 // Queues
 QueueHandle_t queue_sensor;
+measure_buffer_t measurements;
+
+
+
 
 
 void app_main()
@@ -42,9 +52,8 @@ void app_main()
     lora_config(lora_configuration);
     conf_set_NodeMode(SensorNode);
     
-    // Queues initialitation
-    queue_sensor = xQueueCreate(QUEUE_LENGTH_SENSOR, sizeof(struct bme280_data));
-    // Task initialitation
+    // init measurements manager
+    MEASUREMENTS_INIT_BUFFER(measurements, MAX_MEASURES_NUM);
 
     switch (conf_get_NodeMode())
     {
@@ -65,14 +74,32 @@ void tsk_sensor(void *pvParameters)
 {
     struct bme280_dev dev;
     struct bme280_data sensor_data;
+    measure_t measures_list[MAX_MEASURES_NUM];
+    measure_t bme280[BME280_MEASURES_NUM];
+
     bme280_I2C_init(&dev);
 
     while (true)
     {
         stream_sensor_data_forced_mode(&dev, &sensor_data);
-        //print_sensor_data(&data);
+        print_sensor_data(&sensor_data);
         ESP_LOGI(pcTaskGetName(NULL), "Sensor data");
-        xQueueSend(queue_sensor, (void *)&sensor_data, 1000 / portTICK_RATE_MS);
+
+        bme280[0].value = sensor_data.humidity;
+        bme280[0].type = AIR_HUMIDITY;
+
+        bme280[1].value = sensor_data.pressure;
+        bme280[1].type = AIR_PRESSURE;
+
+        bme280[2].value = sensor_data.temperature;
+        bme280[2].type = AIR_TEMPERATURE;
+        
+        for(int i = 0; i < BME280_MEASURES_NUM; i++){
+            ESP_LOGI(pcTaskGetName(NULL), "Push value %f type %d", bme280[i].value, bme280[i].type);
+            measurements_push_measure(&measurements, bme280[i]);
+
+        }
+        measurements_notify(&measurements);
         vTaskDelay(1000 / portTICK_RATE_MS);
     }
 }
@@ -99,17 +126,16 @@ void task_rx(void *pvParameters)
 }
 void task_lora_comm(void *pvParameters)
 {
-    ESP_LOGI(pcTaskGetName(NULL), "Start");
-    uint8_t buf[256]; // Maximum Payload size of SX1276/77/78/79 is 255
-    int count = 0;
-    struct bme280_data sensor_data;
+    ESP_LOGI(pcTaskGetName(NULL), "Start task_lora_comm");
+    
+    measure_t measure;
     while (1)
-    {
-        xQueueReceive(queue_sensor, &sensor_data, portMAX_DELAY);
-        print_sensor_data(&sensor_data);
-        int send_len = sprintf((char *)buf, "%.02f %.02f %.02f %d", sensor_data.humidity, sensor_data.pressure, sensor_data.temperature, count++);
-        lora_send_packet(buf, send_len);
-        ESP_LOGI(pcTaskGetName(NULL), "%d byte packet sent...", send_len);
-        vTaskDelay(4000 / portTICK_RATE_MS);
+    {   
+        ESP_LOGI(pcTaskGetName(NULL), "Waiting measures ...");
+        measurements_wait(&measurements, portMAX_DELAY);
+        while(measurements_pop_measure(&measurements, &measure) != -1){
+            ESP_LOGI(pcTaskGetName(NULL), "value %f  type %d", measure.value, measure.type);
+        }
+        //lora_send_packet((uint8_t *)(&measure), sizeof(measure_struct));
     } // end while
 }

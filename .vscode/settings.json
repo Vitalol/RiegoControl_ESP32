@@ -10,6 +10,9 @@
         "*.inc": "c",
         "bmp2_port.h": "c",
         "bme280.h": "c",
-        "bme280_port.h": "c"
+        "bme280_port.h": "c",
+        "measurements.h": "c",
+        "task.h": "c",
+        "typeinfo": "c"
     }
 }
