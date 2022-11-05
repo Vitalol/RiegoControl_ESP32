@@ -18,7 +18,7 @@
 typedef struct measure_t{
     float value;
     uint8_t type;
-}measure_t;
+}__attribute__((__packed__)) measure_t;
 
 typedef struct measure_handler_t{
     EventGroupHandle_t flag;
