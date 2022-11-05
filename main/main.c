@@ -5,7 +5,7 @@
 
 #include "esp_log.h"
 
-#include "lora.h"
+#include "sx127x.h"
 #include "node_config.h"
 #include "bme280.h"
 #include "bme280_port.h"
@@ -50,10 +50,11 @@ void app_main()
     lora_configuration.bandwith = 7;
     lora_configuration.spreadingFactor = 7;
     lora_config(lora_configuration);
-    conf_set_NodeMode(SensorNode);
+    Node_handler_t node = {0};
+    conf_set_NodeMode(&node, SensorNode);
     // Measures init
     measurements_init(&measure_handler);
-    switch (conf_get_NodeMode())
+    switch (conf_get_NodeMode(&node))
     {
         case SensorNode:
             xTaskCreate(&tsk_sensor, "tsk_sensor", TSK_SIZE_SENSOR, NULL, 5, NULL);

@@ -16,10 +16,10 @@ typedef enum {
 
 /* Structs */
 
-typedef struct NodeConfig_t
+typedef struct Node_handler_t
 {
     NodeMode_t mode;
-}NodeConfig_t;
+}Node_handler_t;
 
 
 
@@ -34,11 +34,15 @@ int conf_get_version(void);
  * 
  * @return NodeMode, sensor or actuaro mode
  */
-NodeMode_t conf_get_NodeMode(void);
+
 /**
- * @brief Set the node working mode
+ * @brief Return the node working mode
  * 
+ * @param NodeConfiguration node handler
+ * @return NodeMode_t sensor or actuator
  */
-void conf_set_NodeMode(NodeMode_t mode);
+NodeMode_t conf_get_NodeMode(Node_handler_t *NodeConfiguration);
+
+void conf_set_NodeMode(Node_handler_t *NodeConfiguration, NodeMode_t mode);
 
 #endif
