@@ -14,24 +14,16 @@
 
 
 
-// Defines
-#define MAX_MEASURES_NUM 255
-
 // Datatype
 typedef struct measure_t{
     float value;
     uint8_t type;
 }measure_t;
 
-typedef struct measure_buffer_t{
-    measure_t *  buffer;
-    SemaphoreHandle_t mux;
+typedef struct measure_handler_t{
     EventGroupHandle_t flag;
-    uint8_t head;
-    uint8_t tail;
-    uint8_t size;
-    uint8_t count;
-}measure_buffer_t;
+    QueueHandle_t msg_queue;
+}measure_handler_t;
 
 
 typedef enum {
@@ -42,18 +34,12 @@ typedef enum {
 
 
 // Function headers
-int measurements_init(measure_buffer_t *buffer, measure_t *ptr, uint8_t size);
-int measurements_push_measure(measure_buffer_t *buffer, measure_t measure);
-int measurements_pop_measure(measure_buffer_t *buffer, measure_t *measure);
 
-void measurements_notify(measure_buffer_t *buffer);
-int measurements_wait(measure_buffer_t *buffer, int wait);
-
-// Macros
-
-#define MEASUREMENTS_INIT_BUFFER(name, size) \
-    measure_t name##_data[size];\
-    measurements_init(&name, name##_data, size);
-
+int measurements_init(measure_handler_t *handler);
+void measurements_notify(measure_handler_t *handler);
+int measurements_wait(measure_handler_t *handler, int wait);
+int measurements_add(measure_handler_t *handler, measure_t *measure);
+int measurements_get(measure_handler_t *handler, measure_t *measure);
+int measurements_pending(measure_handler_t *handler);
 
 #endif

@@ -2,63 +2,43 @@
 
 #include "esp_log.h"
 
-int measurements_init(measure_buffer_t *buffer, measure_t *ptr, uint8_t size){
+#define MEASURE_QUEUE_LENGTH  16
+
+int measurements_init(measure_handler_t *handler){
    // Start mutex
-   buffer->buffer = ptr;
-   buffer->mux = xSemaphoreCreateMutex();
-   buffer->flag = xEventGroupCreate();
-   buffer->count = 0;
-   buffer->head = 0;
-   buffer->tail = 0;
-   buffer->size = size;
+   handler->flag = xEventGroupCreate();
+   handler->msg_queue = xQueueCreate(MEASURE_QUEUE_LENGTH, sizeof(measure_t));
    return 1;
 }
-
-int measurements_push_measure(measure_buffer_t *buffer, measure_t measure){
-   
-   xSemaphoreTake(buffer->mux, portMAX_DELAY);
-   int next;
-   next = buffer->head + 1;      // where is head pointed after the write
-   if(next >= buffer->size){
-      next = 0;
+int measurements_add(measure_handler_t *handler, measure_t *measure){
+   if(xQueueSend(handler->msg_queue, measure,0) == pdTRUE){
+      return 1;
    }
-   if  (next == buffer->tail){  // buffer full
-      ESP_LOGE(pcTaskGetName(NULL), "Circular buffer is full");
-      xSemaphoreGive(buffer->mux);
-      return -1;
-   }
-   buffer->buffer[buffer->head] = measure;
-   buffer->head = next;
-   xSemaphoreGive(buffer->mux);
-   return 1;
+   return -1;
 }
 
-int measurements_pop_measure(measure_buffer_t *buffer, measure_t *measure){
-   int next;
-   xSemaphoreTake(buffer->mux, portMAX_DELAY);
-   if (buffer->head == buffer->tail){  // not data
-      ESP_LOGE(pcTaskGetName(NULL), "Circular buffer is empty");
-      xSemaphoreGive(buffer->mux);
-      return -1;
+int measurements_get(measure_handler_t *handler, measure_t *measure)
+{  
+   int pending = measurements_pending(handler);
+   if(!pending){
+      return 0;
    }
-   next = buffer->tail + 1; 
-   if(next >= buffer->size){
-      next = 0; // roll the buffer
-   }
-   *measure = buffer->buffer[buffer->tail];
-   buffer->tail = next;
-   xSemaphoreGive(buffer->mux);
-   return 1;
+      xQueueReceive(handler->msg_queue, measure, portMAX_DELAY);
+      return pending;
+}
+
+int measurements_pending(measure_handler_t *handler){
+   return uxQueueMessagesWaiting(handler->msg_queue);
 }
 
 // measure notify
-void measurements_notify(measure_buffer_t *buffer){
+void measurements_notify(measure_handler_t *handler){
    ESP_LOGI(pcTaskGetName(NULL), "measurements notify");
-   xEventGroupSetBits(buffer->flag, 0x01);
+   xEventGroupSetBits(handler->flag, 0x01);
 }
 // measure wait
-int measurements_wait(measure_buffer_t *buffer, int wait){
-   xEventGroupWaitBits(buffer->flag, 0x01, pdTRUE, pdFALSE, wait);
+int measurements_wait(measure_handler_t *handler, int wait){
+   xEventGroupWaitBits(handler->flag, 0x01, pdTRUE, pdFALSE, wait);
    ESP_LOGI(pcTaskGetName(NULL), "measurements notified");
    return 1;
 }

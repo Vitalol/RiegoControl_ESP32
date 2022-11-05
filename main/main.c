@@ -24,7 +24,7 @@ void task_rx(void *pvParameters);
 void task_lora_comm(void *pvParameters);
 // Queues
 QueueHandle_t queue_sensor;
-measure_buffer_t measurements;
+measure_handler_t measure_handler;
 
 
 
@@ -51,10 +51,8 @@ void app_main()
     lora_configuration.spreadingFactor = 7;
     lora_config(lora_configuration);
     conf_set_NodeMode(SensorNode);
-    
-    // init measurements manager
-    MEASUREMENTS_INIT_BUFFER(measurements, MAX_MEASURES_NUM);
-
+    // Measures init
+    measurements_init(&measure_handler);
     switch (conf_get_NodeMode())
     {
         case SensorNode:
@@ -96,10 +94,9 @@ void tsk_sensor(void *pvParameters)
         
         for(int i = 0; i < BME280_MEASURES_NUM; i++){
             ESP_LOGI(pcTaskGetName(NULL), "Push value %f type %d", bme280[i].value, bme280[i].type);
-            measurements_push_measure(&measurements, bme280[i]);
-
+            measurements_add(&measure_handler, &bme280[i]);
         }
-        measurements_notify(&measurements);
+        measurements_notify(&measure_handler);
         vTaskDelay(1000 / portTICK_RATE_MS);
     }
 }
@@ -132,8 +129,8 @@ void task_lora_comm(void *pvParameters)
     while (1)
     {   
         ESP_LOGI(pcTaskGetName(NULL), "Waiting measures ...");
-        measurements_wait(&measurements, portMAX_DELAY);
-        while(measurements_pop_measure(&measurements, &measure) != -1){
+        measurements_wait(&measure_handler, portMAX_DELAY);
+        while(measurements_get(&measure_handler, &measure) != 0){
             ESP_LOGI(pcTaskGetName(NULL), "value %f  type %d", measure.value, measure.type);
         }
         //lora_send_packet((uint8_t *)(&measure), sizeof(measure_struct));
