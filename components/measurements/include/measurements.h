@@ -6,13 +6,10 @@
 #include "freertos/semphr.h"
 #include "freertos/event_groups.h"
 
-/*********************************
- *
- *      Measurements file
- * 
- *********************************/
 
 
+// Defines
+#define MAX_MEASURES_NUM    3*16
 
 // Datatype
 typedef struct measure_t{

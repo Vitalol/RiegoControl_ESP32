@@ -14,6 +14,9 @@
         "measurements.h": "c",
         "task.h": "c",
         "typeinfo": "c",
-        "node_config.h": "c"
+        "node_config.h": "c",
+        "stdio.h": "c",
+        "string.h": "c",
+        "sx127x.h": "c"
     }
 }

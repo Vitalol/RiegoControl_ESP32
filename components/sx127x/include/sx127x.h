@@ -1,39 +1,39 @@
-#ifndef __LORA_H__
-#define __LORA_H__
+#ifndef __SX127x_H__
+#define __SX127x_H__
 
 
 /* Library original */
-void lora_reset(void);
-void lora_explicit_header_mode(void);
-void lora_implicit_header_mode(int size);
-void lora_idle(void);
-void lora_sleep(void); 
-void lora_receive(void);
-int lora_get_irq(void);
-void lora_set_tx_power(int level);
-void lora_set_frequency(long frequency);
-void lora_set_spreading_factor(int sf);
-int lora_get_spreading_factor(void);
-void lora_set_dio_mapping(int dio, int mode);
-int lora_get_dio_mapping(int dio);
-void lora_set_bandwidth(int sbw);
-int lora_get_bandwidth(void);
-void lora_set_coding_rate(int denominator);
-int lora_get_coding_rate(void);
-void lora_set_preamble_length(long length);
-long lora_get_preamble_length(void);
-void lora_set_sync_word(int sw);
-void lora_enable_crc(void);
-void lora_disable_crc(void);
-int lora_init(void);
-void lora_send_packet(uint8_t *buf, int size);
-int lora_receive_packet(uint8_t *buf, int size);
-int lora_received(void);
-int lora_packet_rssi(void);
-float lora_packet_snr(void);
-void lora_close(void);
-int lora_initialized(void);
-void lora_dump_registers(void);
+void sx127x_reset(void);
+void sx127x_explicit_header_mode(void);
+void sx127x_implicit_header_mode(int size);
+void sx127x_idle(void);
+void sx127x_sleep(void); 
+void sx127x_receive(void);
+int sx127x_get_irq(void);
+void sx127x_set_tx_power(int level);
+void sx127x_set_frequency(long frequency);
+void sx127x_set_spreading_factor(int sf);
+int sx127x_get_spreading_factor(void);
+void sx127x_set_dio_mapping(int dio, int mode);
+int sx127x_get_dio_mapping(int dio);
+void sx127x_set_bandwidth(int sbw);
+int sx127x_get_bandwidth(void);
+void sx127x_set_coding_rate(int denominator);
+int sx127x_get_coding_rate(void);
+void sx127x_set_preamble_length(long length);
+long sx127x_get_preamble_length(void);
+void sx127x_set_sync_word(int sw);
+void sx127x_enable_crc(void);
+void sx127x_disable_crc(void);
+int sx127x_init(void);
+void sx127x_send_packet(uint8_t *buf, int size);
+int sx127x_receive_packet(uint8_t *buf, int size);
+int sx127x_received(void);
+int sx127x_packet_rssi(void);
+float sx127x_packet_snr(void);
+void sx127x_close(void);
+int sx127x_initialized(void);
+void sx127x_dump_registers(void);
 
 /* Added functions, structs, defines, etc */
 
@@ -44,14 +44,14 @@ void lora_dump_registers(void);
 #define FREQ_915MHz 915e6 
 
 /* structs */
-typedef struct LoraConf_t{
+typedef struct sx127xConf_t{
     int64_t frequency;
     uint8_t codingRate;
     uint8_t bandwith;
     uint8_t spreadingFactor;
-}LoraConf_t;
+}sx127xConf_t;
 
 /* functions */
-void lora_config(LoraConf_t loraConf);
+void sx127x_config(sx127xConf_t sx127xConf);
 
 #endif

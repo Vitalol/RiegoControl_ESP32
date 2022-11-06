@@ -16,11 +16,11 @@ typedef enum {
 
 /* Structs */
 
-typedef struct Node_handler_t
+typedef struct node_handler_t
 {
     NodeMode_t mode;
     uint8_t addr;
-}Node_handler_t;
+}node_handler_t;
 
 
 
@@ -42,11 +42,11 @@ int conf_get_version(void);
  * @param Node node handler
  * @return NodeMode_t sensor or actuator
  */
-NodeMode_t conf_get_NodeMode(Node_handler_t *Node);
+NodeMode_t conf_get_NodeMode(node_handler_t *Node);
 
-void conf_set_NodeMode(Node_handler_t *Node, NodeMode_t mode);
+void conf_set_NodeMode(node_handler_t *Node, NodeMode_t mode);
 
-int conf_get_node_addr(Node_handler_t Node);
-void conf_set_node_addr(Node_handler_t *Node, uint8_t addr);
+int conf_get_node_addr(node_handler_t Node);
+void conf_set_node_addr(node_handler_t *Node, uint8_t addr);
 
 #endif
