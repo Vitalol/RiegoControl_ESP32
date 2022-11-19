@@ -7,7 +7,7 @@ set(EXTRA_COMPONENT_DIRS /components/lora,
                             /components/node_config,
                             /components/BME280,
                             /components/measurements,
-                            /components/scheaduler,
+                            /components/scheduler,
                             )
 
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)

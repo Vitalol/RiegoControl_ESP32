@@ -17,6 +17,12 @@
         "node_config.h": "c",
         "stdio.h": "c",
         "string.h": "c",
-        "sx127x.h": "c"
+        "sx127x.h": "c",
+        "scheduler.h": "c",
+        "lora.h": "c",
+        "semphr.h": "c",
+        "atomic": "c",
+        "esp_sntp.h": "c",
+        "freertos.h": "c"
     }
 }
