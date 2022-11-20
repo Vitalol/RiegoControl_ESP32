@@ -23,6 +23,11 @@
         "semphr.h": "c",
         "atomic": "c",
         "esp_sntp.h": "c",
-        "freertos.h": "c"
+        "freertos.h": "c",
+        "esp_log.h": "c",
+        "sensors.h": "c",
+        "gpio.h": "c",
+        "actuators.h": "c",
+        "thread": "c"
     }
 }

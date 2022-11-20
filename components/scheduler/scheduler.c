@@ -17,7 +17,8 @@ void scheduler_mutex_give(scheduler_handler_t *sch_hndl) {
     xSemaphoreGive((sch_hndl->mutex));
 }
 int scheduler_add_schedule(scheduler_handler_t *sch_hndl,
-                           scheduler_dates_t date, int id, void (*callback)()) {
+                           scheduler_dates_t date, int id,
+                           void (*callback)(void *parameters)) {
     scheduler_mutex_take(sch_hndl, portMAX_DELAY);
 
     if (id > SCHEDULES_MAX_NUM) {
@@ -73,8 +74,7 @@ void scheduler_task(void *pvParameters) {
                                  time_now)) {
                 if (!sch_hndl->schedules_list[sch_indx].lock) {
                     sch_hndl->schedules_list[sch_indx].lock = 1;
-
-                    sch_hndl->schedules_list[sch_indx].callback();
+                    sch_hndl->schedules_list[sch_indx].callback(&sch_indx);
                 }
             }
         }

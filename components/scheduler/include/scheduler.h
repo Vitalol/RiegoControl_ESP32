@@ -27,7 +27,7 @@ typedef struct scheduler_schedule_t {
     bool              active;
     bool              lock;
     scheduler_dates_t date;
-    void (*callback)();
+    void (*callback)(void *parameters);
 } scheduler_schedule_t;
 
 typedef struct scheduler_handler_t {
@@ -38,7 +38,8 @@ typedef struct scheduler_handler_t {
 
 // prototypes
 int scheduler_add_schedule(scheduler_handler_t *sch_hndl,
-                           scheduler_dates_t date, int id, void (*callback)());
+                           scheduler_dates_t date, int id,
+                           void (*callback)(void *parameters));
 int scheduler_remove_schedule(scheduler_handler_t *sch_hndl, int id);
 int scheduler_init(scheduler_handler_t *sch_hndl);
 #endif

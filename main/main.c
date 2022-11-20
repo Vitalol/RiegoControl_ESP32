@@ -1,11 +1,14 @@
+// Compiler libs
 #include <stdio.h>
 #include <string.h>
-
-#include "bme280.h"
-#include "bme280_port.h"
+// Espressif and freertos libs
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+// my libs
+#include "actuators.h"
+#include "bme280.h"
+#include "bme280_port.h"
 #include "lora.h"
 #include "measurements.h"
 #include "node_config.h"
@@ -13,36 +16,41 @@
 #include "sensors.h"
 
 // define
-void callback(void) { ESP_LOGW("CALLBACK", " CALLBAAAAAAAAAAAAAAACK \n"); }
+void callback(void *parameters) {
+    int args = *(int *)parameters;
+    ESP_LOGW("CALLBACK", " CALLBAAAAAAAAAAAAAAACK %d \n", args);
+}
 void app_main() {
     ESP_LOGI(pcTaskGetName(NULL), "Project Version: %d", conf_get_version());
 
     // Conf Node
-    static node_handler_t node = {0};  // static to avoid storing it in stack
+    static node_handler_t node = {0};  // static to avoid losing scope
     conf_set_NodeMode(&node, SensorNode);
     conf_set_node_addr(&node, 5);
-    /*
-        // Measures init
-        static measure_handler_t measure_handler;
-        measurements_init(&measure_handler);
 
-        // Node init
-        switch (conf_get_NodeMode(&node)) {
-            case SensorNode:
-                sensors_init_task(&measure_handler);
-                break;
-            case ActuatorNode:
-                // ToDo:
-                break;
-            default:
-                break;
-        }
+    // Measures init
+    static measure_handler_t measure_hndl = {
+        0};  // static to avoid losing scope
+    measurements_init(&measure_hndl);
 
-        // LoRa initialitation
-        lora_init();
-        lora_init_task(node, measure_handler);
-    */
+    // Node init
+    switch (conf_get_NodeMode(&node)) {
+        case SensorNode:
+            sensors_init_task(&measure_hndl);
+            break;
+        case ActuatorNode:
+            // ToDo:
+            break;
+        default:
+            break;
+    }
+
+    // LoRa initialitation
+    lora_init();
+    lora_init_task(node, measure_hndl);
+
     // Test scheduler
+
     static scheduler_handler_t scheduler = {0};
     scheduler.granularity                = 10;
 
@@ -65,4 +73,13 @@ void app_main() {
                                .month_days = 2 << (1 - 1),
                                .week_days  = 1 << (4 - 1)};
     scheduler_add_schedule(&scheduler, date3, 3, callback);
+
+    actuator_handler_t actuator = {.type                  = ACTUATOR_IRRIGATOR,
+                                   .actuator.irrigator.id = 1};
+    for (int i = 0; i < 5; i++) {
+        actuator_irrigation(actuator, 1);
+        vTaskDelay(500 / portTICK_RATE_MS);
+        actuator_irrigation(actuator, 0);
+        vTaskDelay(500 / portTICK_RATE_MS);
+    }
 }
