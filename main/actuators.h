@@ -8,15 +8,17 @@ typedef enum actuators_t {
 } actuators_t;
 
 typedef struct actuator_irrigator_t {
+    int on;
     int id;
 } actuator_irrigator_t;
 
 typedef struct actuator_test_t {
-    int id;
+    int on;
 } actuator_test_t;
 
 typedef struct actuator_handler_t {
     actuators_t type;
+    int         id;
     union {
         actuator_irrigator_t irrigator;
         actuator_test_t      test;
@@ -24,5 +26,6 @@ typedef struct actuator_handler_t {
 
 } actuator_handler_t;
 // prototypes
-int actuator_irrigation(actuator_handler_t actuator_hdlr, int on);
+
+void actuator_callback(actuator_handler_t *actuator_hndlr);
 #endif
