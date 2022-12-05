@@ -71,15 +71,13 @@ void task_lora_comm(void *pvParameters) {
     lora_task_parameters parameters = *(lora_task_parameters *)pvParameters;
     node_handler_t       node       = parameters.node_h;
     measure_handler_t    measure_handler = parameters.measure_h;
-    ESP_LOGI(pcTaskGetName(NULL), "Start task_lora_comm");
-    measure_t measure;
-    uint8_t   lora_pkt[LORA_MAX_PKT_SIZE];
-    int       lora_pkt_indx         = 0;
-    char      lora_pkt_string[1024] = {0};
+    measure_t            measure;
+    uint8_t              lora_pkt[LORA_MAX_PKT_SIZE];
+    int                  lora_pkt_indx         = 0;
+    char                 lora_pkt_string[1024] = {0};
 
     msg_protocol_t msg_to_send = MSG_PROTOCOL_SEND_MEASURES;
     while (1) {
-        ESP_LOGI(pcTaskGetName(NULL), "Waiting measures ...");
         lora_pkt_indx = 0;
         switch (msg_to_send) {
             case MSG_PROTOCOL_SEND_MEASURES:
