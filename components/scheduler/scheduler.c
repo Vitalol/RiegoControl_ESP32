@@ -26,7 +26,6 @@ int scheduler_add_schedule(scheduler_handler_t *sch_hndl,
         return -1;
     }
     scheduler_schedule_t schedule = {.active    = 1,
-                                     .lock      = 0,
                                      .date      = date,
                                      .callback  = callback,
                                      .arguments = arguments};
@@ -83,11 +82,8 @@ void scheduler_task(void *pvParameters) {
 
             if (scheduler_is_now(sch_hndl->schedules_list[sch_indx].date,
                                  time_now)) {
-                if (!sch_hndl->schedules_list[sch_indx].lock) {
-                    sch_hndl->schedules_list[sch_indx].lock = 1;
-                    sch_hndl->schedules_list[sch_indx].callback(
-                        sch_hndl->schedules_list[sch_indx].arguments);
-                }
+                sch_hndl->schedules_list[sch_indx].callback(
+                    sch_hndl->schedules_list[sch_indx].arguments);
             }
         }
         scheduler_mutex_give(sch_hndl);

@@ -25,7 +25,6 @@ typedef struct scheduler_dates_t {
 
 typedef struct scheduler_schedule_t {
     bool              active;
-    bool              lock;
     scheduler_dates_t date;
     void (*callback)(void *parameters);
     void *arguments;
