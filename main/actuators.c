@@ -31,7 +31,7 @@ int actuator_irrigation(actuator_handler_t *actuator_hndlr) {
         return -1;
     }
     gpio_set_direction(gpio_pin, GPIO_MODE_OUTPUT);
-    ESP_LOGW(LOG_TAG, " Led %d \n", actuator_hndlr->actuator.irrigator.on);
+    ESP_LOGW(LOG_TAG, " Led %d", actuator_hndlr->actuator.irrigator.on);
     return gpio_set_level(gpio_pin, actuator_hndlr->actuator.irrigator.on);
 }
 

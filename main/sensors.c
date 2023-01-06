@@ -16,7 +16,7 @@
 
 #define QUEUE_LENGTH_SENSOR 16
 #define BME280_MEASURES_NUM 3
-
+#define SENSORS_FREQUENCY   (10 * 1000)
 // Prototypes
 void sensor_task(void *pvParameters);
 
@@ -52,6 +52,6 @@ void sensor_task(void *pvParameters) {
             measurements_add(&measure_handler, &bme280[i]);
         }
         measurements_notify(&measure_handler);
-        vTaskDelay(1000 / portTICK_RATE_MS);
+        vTaskDelay(SENSORS_FREQUENCY / portTICK_RATE_MS);
     }
 }

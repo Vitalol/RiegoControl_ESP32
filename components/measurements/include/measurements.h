@@ -8,7 +8,8 @@
 #include "freertos/task.h"
 
 // Defines
-#define MAX_MEASURES_NUM 3 * 16
+#define MAX_MEASURES_NUM   (3 * 16)
+#define MEASURE_READY_FLAG 0x01
 
 // Datatype
 typedef struct measure_t {

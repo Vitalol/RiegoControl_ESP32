@@ -31,7 +31,6 @@ typedef struct scheduler_schedule_t {
 } scheduler_schedule_t;
 
 typedef struct scheduler_handler_t {
-    uint32_t             granularity;
     scheduler_schedule_t schedules_list[SCHEDULES_MAX_NUM];
     SemaphoreHandle_t    mutex;
 } scheduler_handler_t;

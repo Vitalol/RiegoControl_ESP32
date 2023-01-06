@@ -3,7 +3,6 @@
 #include "esp_log.h"
 
 #define MEASURE_QUEUE_LENGTH 16
-
 int measurements_init(measure_handler_t *handler) {
     handler->flag      = xEventGroupCreate();
     handler->msg_queue = xQueueCreate(MEASURE_QUEUE_LENGTH, sizeof(measure_t));
@@ -31,12 +30,12 @@ int measurements_pending(measure_handler_t *handler) {
 
 // measure notify
 void measurements_notify(measure_handler_t *handler) {
-    ESP_LOGI(pcTaskGetName(NULL), "measurements notify");
-    xEventGroupSetBits(handler->flag, 0x01);
+    // ESP_LOGI(pcTaskGetName(NULL), "measurements notify");
+    xEventGroupSetBits(handler->flag, MEASURE_READY_FLAG);
 }
 // measure wait
 int measurements_wait(measure_handler_t *handler, int wait) {
-    xEventGroupWaitBits(handler->flag, 0x01, pdTRUE, pdFALSE, wait);
-    ESP_LOGI(pcTaskGetName(NULL), "measurements notified");
-    return 0;
+    // ESP_LOGI(pcTaskGetName(NULL), "measurements notified");
+    return xEventGroupWaitBits(handler->flag, MEASURE_READY_FLAG, pdTRUE,
+                               pdFALSE, wait);
 }
