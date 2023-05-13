@@ -28,6 +28,10 @@
         "sensors.h": "c",
         "gpio.h": "c",
         "actuators.h": "c",
-        "thread": "c"
+        "thread": "c",
+        "timers.h": "c",
+        "condition_variable": "c",
+        "mutex": "c",
+        "*.ipp": "c"
     }
 }

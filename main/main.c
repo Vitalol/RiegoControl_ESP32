@@ -18,7 +18,7 @@
 // define
 void callback(void *parameters) {
     int args = *(int *)parameters;
-    ESP_LOGW("CALLBACK", " CALLBAAAAAAAAAAAAAAACK %d \n", args);
+    ESP_LOGW("CALLBACK", " CALLBAAAAAAAAAAAAAAACK %d", args);
 }
 void app_main() {
     ESP_LOGI(pcTaskGetName(NULL), "Project Version: %d", conf_get_version());
@@ -45,41 +45,38 @@ void app_main() {
             break;
     }
 
-    // LoRa initialitation
-    lora_init();
+    // Lora init
     lora_init_task(node, measure_hndl);
 
     // Test scheduler
 
     static scheduler_handler_t scheduler = {0};
-    scheduler.granularity                = 10;
 
     scheduler_init(&scheduler);
 
-    scheduler_dates_t date1 = {.hour       = 0,
-                               .minute     = 0,
-                               .month_days = 1 << (1 - 1),
-                               .week_days  = 1 << 6};
-    scheduler_add_schedule(&scheduler, date1, 1, callback);
+    // Add schedules
+    int duration = 1;
+    // turn on
+    scheduler_dates_t turn_on = {.hour       = 0,
+                                 .minute     = 1,
+                                 .month_days = 1 << (1 - 1),
+                                 .week_days  = 1 << 6};
 
-    scheduler_dates_t date2 = {.hour       = 0,
-                               .minute     = 1,
-                               .month_days = 1 << (1 - 1),
-                               .week_days  = 1 << 6};
-    scheduler_add_schedule(&scheduler, date2, 2, callback);
+    static actuator_handler_t turn_on_hndl = {.type = ACTUATOR_IRRIGATOR,
+                                              .actuator.irrigator.id = 1,
+                                              .actuator.irrigator.on = 1};
 
-    scheduler_dates_t date3 = {.hour       = 0,
-                               .minute     = 3,
-                               .month_days = 2 << (1 - 1),
-                               .week_days  = 1 << (4 - 1)};
-    scheduler_add_schedule(&scheduler, date3, 3, callback);
+    scheduler_add_schedule(&scheduler, turn_on, 1, actuator_callback,
+                           (void *)&turn_on_hndl);
 
-    actuator_handler_t actuator = {.type                  = ACTUATOR_IRRIGATOR,
-                                   .actuator.irrigator.id = 1};
-    for (int i = 0; i < 5; i++) {
-        actuator_irrigation(actuator, 1);
-        vTaskDelay(500 / portTICK_RATE_MS);
-        actuator_irrigation(actuator, 0);
-        vTaskDelay(500 / portTICK_RATE_MS);
-    }
+    // turn off
+    scheduler_dates_t turn_off = turn_on;
+    turn_off.minute            = turn_on.minute + duration;
+
+    static actuator_handler_t turn_off_hndl = {.type = ACTUATOR_IRRIGATOR,
+                                               .actuator.irrigator.id = 1,
+                                               .actuator.irrigator.on = 0};
+
+    scheduler_add_schedule(&scheduler, turn_off, 2, actuator_callback,
+                           (void *)&turn_off_hndl);
 }

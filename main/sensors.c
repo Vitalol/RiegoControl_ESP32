@@ -16,7 +16,7 @@
 
 #define QUEUE_LENGTH_SENSOR 16
 #define BME280_MEASURES_NUM 3
-#define SENSORS_FREQUENCY   (10 * 1000)
+#define SENSORS_FREQUENCY   (30 * 1000)
 // Prototypes
 void sensor_task(void *pvParameters);
 
