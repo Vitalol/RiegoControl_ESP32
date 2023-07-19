@@ -150,7 +150,7 @@ void task_lora_tx(void *pvParameters) {
                 msg_set_time.header.destination    = LORA_SINK_ADDR;
                 msg_set_time.header.origin         = conf_get_node_addr(node);
                 msg_set_time.header.type           = PROTOCOL_MSG_SET_TIME;
-                msg_set_time.header.lenght         = sizeof(protocol_set_hour_str);
+                msg_set_time.header.length         = sizeof(protocol_set_hour_str);
 
                 time_t rawtime;
                 time(&rawtime);
@@ -159,16 +159,16 @@ void task_lora_tx(void *pvParameters) {
                 // Print msg
                 print_offset = 0;
 
-                for (int i = 0; i < (msg_set_time.header.lenght); i++) {
+                for (int i = 0; i < (msg_set_time.header.length); i++) {
                     print_offset +=
                         sprintf(&lora_pkt_string[print_offset], "%02X ",
                                 ((uint8_t *)&msg_set_time)[i]);
                 }
 
                 ESP_LOGI(pcTaskGetName(NULL), "lora_pkt(%d) = %s",
-                         msg_set_time.header.lenght, lora_pkt_string);
+                         msg_set_time.header.length, lora_pkt_string);
                 lora_send_packet(&lora_handler, (uint8_t *)&msg_set_time,
-                                 (int)msg_set_time.header.lenght);
+                                 (int)msg_set_time.header.length);
 
                 lora_rx_notify(&lora_handler);  // we ex
 
@@ -187,23 +187,23 @@ void task_lora_tx(void *pvParameters) {
                     msg_measure.measures[measures_count++] = measure;
                 }
                 // Finish filling msg
-                msg_measure.header.lenght = sizeof(protocol_header_str) +
+                msg_measure.header.length = sizeof(protocol_header_str) +
                                             measures_count * sizeof(measure_t);
 
                 // Print msg
                 print_offset = 0;
 
-                for (int i = 0; i < (msg_measure.header.lenght); i++) {
+                for (int i = 0; i < (msg_measure.header.length); i++) {
                     print_offset +=
                         sprintf(&lora_pkt_string[print_offset], "%02X ",
                                 ((uint8_t *)&msg_measure)[i]);
                 }
 
                 ESP_LOGI(pcTaskGetName(NULL), "lora_pkt(%d) = %s",
-                         msg_measure.header.lenght, lora_pkt_string);
+                         msg_measure.header.length, lora_pkt_string);
                 // Send by lora
                 lora_send_packet(&lora_handler, (uint8_t *)&msg_measure,
-                                 (int)msg_measure.header.lenght);
+                                 (int)msg_measure.header.length);
                 break;
 
         }  // end switch

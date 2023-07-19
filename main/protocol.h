@@ -19,7 +19,7 @@ typedef struct protocol_header_str {
     uint8_t destination;
     uint8_t origin;
     uint8_t type;
-    uint8_t lenght;
+    uint8_t length;
 } __attribute__((__packed__)) protocol_header_str;
 
 // Set hour
