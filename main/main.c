@@ -29,8 +29,7 @@ void app_main() {
     conf_set_node_addr(&node, 5);
 
     // Measures init
-    static measure_handler_t measure_hndl = {
-        0};  // static to avoid losing scope
+    static measure_handler_t measure_hndl = {0};  // static to avoid losing scope
     measurements_init(&measure_hndl);
 
     // Node init
@@ -62,7 +61,7 @@ void app_main() {
                                  .month_days = 1 << (1 - 1),
                                  .week_days  = 1 << 6};
 
-    static actuator_handler_t turn_on_hndl = {.type = ACTUATOR_IRRIGATOR,
+    static actuator_handler_t turn_on_hndl = {.type                  = ACTUATOR_IRRIGATOR,
                                               .actuator.irrigator.id = 1,
                                               .actuator.irrigator.on = 1};
 
@@ -73,7 +72,7 @@ void app_main() {
     scheduler_dates_t turn_off = turn_on;
     turn_off.minute            = turn_on.minute + duration;
 
-    static actuator_handler_t turn_off_hndl = {.type = ACTUATOR_IRRIGATOR,
+    static actuator_handler_t turn_off_hndl = {.type                  = ACTUATOR_IRRIGATOR,
                                                .actuator.irrigator.id = 1,
                                                .actuator.irrigator.on = 0};
 

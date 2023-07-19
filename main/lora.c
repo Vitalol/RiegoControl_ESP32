@@ -31,13 +31,11 @@
 // Typedef
 
 typedef struct lora_task_handler {
-    node_handler_t node_h;  // Node info, address and mode
-    measure_handler_t
-        measure_h;  // measure handler, contains the measures queue
-    SemaphoreHandle_t mutex_lora;  // Mutex to access lora hardware
-    SemaphoreHandle_t
-           rx_task_semaphore;    // Semaphore to controll rx_task from tx_task
-    time_t rx_receive_duration;  // time receiving after sending msg
+    node_handler_t    node_h;               // Node info, address and mode
+    measure_handler_t measure_h;            // measure handler, contains the measures queue
+    SemaphoreHandle_t mutex_lora;           // Mutex to access lora hardware
+    SemaphoreHandle_t rx_task_semaphore;    // Semaphore to controll rx_task from tx_task
+    time_t            rx_receive_duration;  // time receiving after sending msg
 
 } lora_task_handler;
 
@@ -116,10 +114,10 @@ void lora_init_task(node_handler_t node_h, measure_handler_t measure_h) {
 }
 
 void task_lora_tx(void *pvParameters) {
-    lora_task_handler lora_handler    = *(lora_task_handler *)pvParameters;
-    node_handler_t    node            = lora_handler.node_h;
-    measure_handler_t measure_handler = lora_handler.measure_h;
-    int               print_offset    = 0;
+    lora_task_handler lora_handler          = *(lora_task_handler *)pvParameters;
+    node_handler_t    node                  = lora_handler.node_h;
+    measure_handler_t measure_handler       = lora_handler.measure_h;
+    int               print_offset          = 0;
     char              lora_pkt_string[1024] = {0};
 
     time_t time_last    = 0;
@@ -152,7 +150,7 @@ void task_lora_tx(void *pvParameters) {
                 msg_set_time.header.destination    = LORA_SINK_ADDR;
                 msg_set_time.header.origin         = conf_get_node_addr(node);
                 msg_set_time.header.type           = PROTOCOL_MSG_SET_TIME;
-                msg_set_time.header.lenght = sizeof(protocol_set_hour_str);
+                msg_set_time.header.lenght         = sizeof(protocol_set_hour_str);
 
                 time_t rawtime;
                 time(&rawtime);
@@ -180,8 +178,8 @@ void task_lora_tx(void *pvParameters) {
                 msg_to_send                           = 0;
                 protocol_send_measure_str msg_measure = {0};
                 msg_measure.header.destination        = LORA_SINK_ADDR;
-                msg_measure.header.origin = conf_get_node_addr(node);
-                msg_measure.header.type   = PROTOCOL_MSG_SEND_MEASURE;
+                msg_measure.header.origin             = conf_get_node_addr(node);
+                msg_measure.header.type               = PROTOCOL_MSG_SEND_MEASURE;
                 // Get measures
                 int       measures_count = 0;
                 measure_t measure;
@@ -210,7 +208,7 @@ void task_lora_tx(void *pvParameters) {
 
         }  // end switch
 
-    }  // end while
+    }      // end while
 }
 
 int lora_rx_wait(lora_task_handler *handler) {
@@ -256,7 +254,7 @@ void task_lora_rx(void *pvParameters) {
 
                     switch (buf[LORA_MSG_PROTOCOL_INDX]) {
                         case PROTOCOL_MSG_SET_TIME:
-                            time_received = *(int *)(&buf[LORA_DATA_INIT_INDX]);
+                            time_received     = *(int *)(&buf[LORA_DATA_INIT_INDX]);
                             struct timeval tv = {0};
                             tv.tv_sec         = (time_t)time_received;
                             ESP_LOGI(pcTaskGetName(NULL), "Change time to %d",
