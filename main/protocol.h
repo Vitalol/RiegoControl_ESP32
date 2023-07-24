@@ -14,6 +14,14 @@
 #define PROTOCOL_MSG_SEND_MEASURE     4
 #define PROTOCO_MSG_MANUAL_ACTIVATION 5
 #define PROTOCOL_MSG_ACTUATION_RULE   6
+#define PROTOCOL_MSG_SET_RULE         7
+
+// Rule struct (move to another module?)
+typedef struct rule_str {
+    uint8_t type;
+    float   value;
+    uint8_t rule;  // 0 Larger or equal 1 Le
+} __attribute__((__packed__)) rule_str;
 
 typedef struct protocol_header_str {
     uint8_t destination;
@@ -36,6 +44,12 @@ typedef struct protocol_set_scheduler_str {
     uint8_t             actuatorID;
     scheduler_dates_t   schedule;
 } __attribute__((__packed__)) protocol_set_scheduler_str;
+
+typedef struct protocol_set_rule_str {
+    protocol_header_str header;
+    uint8_t             actuatorID;
+    rule_str            rule;
+} __attribute__((__packed__)) protocol_set_rule_str;
 
 // Send MEASURE
 
