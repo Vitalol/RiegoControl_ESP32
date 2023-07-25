@@ -21,7 +21,8 @@ typedef struct scheduler_dates_t {
     uint8_t  week_days;   // Wich days of the week
     uint8_t  hour;        // At wich hour
     uint8_t  minute;      // At wich minute
-} scheduler_dates_t;
+    uint32_t duration;    // for how long
+} __attribute__((__packed__)) scheduler_dates_t;
 
 typedef struct scheduler_schedule_t {
     bool              active;
