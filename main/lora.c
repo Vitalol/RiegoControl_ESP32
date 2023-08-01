@@ -188,7 +188,7 @@ void task_lora_tx(void *pvParameters) {
                 }
                 // Finish filling msg
                 msg_measure.header.length = sizeof(protocol_header_str) +
-                                            measures_count * sizeof(measure_t);
+                                            measures_count * sizeof(measure_t) + 1;
 
                 // Print msg
                 print_offset = 0;
