@@ -30,11 +30,7 @@ typedef struct node_handler_t
  * @return int project version value
  */
 int conf_get_version(void);
-/**
- * @brief Return the node working mode 
- * 
- * @return NodeMode, sensor or actuaro mode
- */
+
 
 /**
  * @brief Return the node working mode

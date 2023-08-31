@@ -14,7 +14,7 @@
 #define PROTOCOL_MSG_SEND_MEASURE     4
 #define PROTOCO_MSG_MANUAL_ACTIVATION 5
 #define PROTOCOL_MSG_ACTUATION_RULE   6
-#define PROTOCOL_MSG_SET_RULE         7
+
 
 // Rule struct (move to another module?)
 typedef struct rule_str {
