@@ -40,7 +40,7 @@ void sx127x_dump_registers(void);
 #define FREQ_169MHz 169e6 
 #define FREQ_433MHz 433e6 
 #define FREQ_470MHz 470e6 
-#define FREQ_866MHz 866e6 
+#define FREQ_868MHz 868e6 
 #define FREQ_915MHz 915e6 
 
 /* structs */

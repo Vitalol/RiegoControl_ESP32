@@ -86,7 +86,7 @@ void lora_init(sx127xConf_t sx127x_configuration) {
     // sx127x configuration
     sx127x_enable_crc();
 
-    sx127x_configuration.frequency       = FREQ_915MHz;
+    sx127x_configuration.frequency       = FREQ_868MHz;
     sx127x_configuration.codingRate      = 5;
     sx127x_configuration.bandwith        = 7;
     sx127x_configuration.spreadingFactor = 7;
